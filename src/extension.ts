@@ -1,26 +1,29 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import { commands, extensions, ExtensionContext } from 'vscode';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "smart-ime" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('smart-ime.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Smart IME!');
-	});
-
-	context.subscriptions.push(disposable);
+// 执行命令
+export async function execSwitchCommand() {
+  const extName = 'beishanyufu.ime-and-cursor';
+  const command = 'ime-and-cursor.switch';
+  try {
+    await commands.executeCommand(command);
+  } catch (err) {
+    // 如果失败了, 则走更复杂的错误处理流程
+    const imeAndCursorExt = extensions.getExtension(extName);
+    if (!imeAndCursorExt) {
+      console.log('请首先完成 IME and Cursor 插件的安装与相应配置');
+      return;
+    }
+    // 没有激活则激活插件
+    if (!imeAndCursorExt.isActive) {
+      await imeAndCursorExt.activate();
+    }
+    commands.executeCommand(command);
+  }
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() {}
+export function activate(context: ExtensionContext) {
+  // Open a typst local package
+  context.subscriptions.push(commands.registerCommand('smart-ime.helloWorld', async () => {
+    await execSwitchCommand();
+  }));
+}
