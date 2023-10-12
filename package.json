@@ -1,6 +1,7 @@
 {
   "name": "vscode-smart-ime",
   "displayName": "Smart IME",
+  "publisher": "OrangeX4",
   "description": "Smart IME",
   "version": "0.0.1",
   "engines": {
@@ -70,5 +71,14 @@
   "extensionDependencies": [
     "draivin.hscopes",
     "beishanyufu.ime-and-cursor"
-  ]
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/OrangeX4/vscode-smart-ime/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OrangeX4/vscode-smart-ime"
+  },
+  "homepage": "https://orangex4.cool"
 }
