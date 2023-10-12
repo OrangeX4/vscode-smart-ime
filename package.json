@@ -9,13 +9,41 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "*"
+  ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
+    "configuration": [
       {
-        "command": "smart-ime.helloWorld",
-        "title": "Hello World"
+        "title": "Smart IME",
+        "properties": {
+          "smart-ime.throttleTime": {
+            "type": "number",
+            "default": 2000,
+            "description": "节流时间，一段时间内只会触发一次，单位为毫秒"
+          },
+          "smart-ime.enableChineseAndSpaceSwitch": {
+            "type": "boolean",
+            "default": false,
+            "description": "检测到中文+空格时切换输入法"
+          },
+          "smart-ime.enableEnglishAndDoubleSpaceSwitch": {
+            "type": "boolean",
+            "default": false,
+            "description": "检测到当前行有中文且前面是非中文+双空格时切换输入法并删掉一个空格"
+          },
+          "smart-ime.enterScopesSwitch": {
+            "type": "string",
+            "default": "comment",
+            "description": "进入某些 scopes 时切换输入法，用逗号分割，前缀匹配"
+          },
+          "smart-ime.leaveScopesSwitch": {
+            "type": "string",
+            "default": "comment",
+            "description": "离开某些 scopes 时切换输入法，用逗号分割，前缀匹配"
+          }
+        }
       }
     ]
   },
@@ -38,5 +66,9 @@
     "mocha": "^10.2.0",
     "typescript": "^5.2.2",
     "@vscode/test-electron": "^2.3.4"
-  }
+  },
+  "extensionDependencies": [
+    "draivin.hscopes",
+    "beishanyufu.ime-and-cursor"
+  ]
 }
