@@ -6,9 +6,9 @@ import {
   ExtensionContext,
   // var
   window,
-  commands,
   extensions,
   workspace,
+  commands,
 } from 'vscode';
 import { HScopesAPI } from '../types/hscopes';
 
@@ -17,12 +17,22 @@ const englishAndDoubleSpaceSwitchPattern = /^[^\u4e00-\u9fa5]  $/;
 
 // config
 const config = {
-  // 节流时间
-  throttleTime: 2000,
-  enableChineseAndSpaceSwitch: false,
-  enableEnglishAndDoubleSpaceSwitch: false,
-  enterScopesSwitch: [] as string[],
-  leaveScopesSwitch: [] as string[],
+  enableChineseAndSpaceSwitchToEnglish: false,
+  enableEnglishAndDoubleSpaceSwitchToChinese: false,
+  enterScopesSwitchToChinese: [] as string[],
+  enterScopesSwitchToEnglish: [] as string[],
+  leaveScopesSwitchToChinese: [] as string[],
+  leaveScopesSwitchToEnglish: [] as string[],
+};
+
+// ime api
+const imeApi = extensions.getExtension('beishanyufu.ime-and-cursor')?.exports as {
+  getChineseIM: () => string
+  getEnglishIM: () => string
+  obtainIM: () => string
+  switchToChineseIM: () => void
+  switchToEnglishIM: () => void
+  switch: () => void
 };
 
 // 用于 scope 判断
@@ -35,41 +45,28 @@ export function updateConfig() {
     return arrStr.split(',').map((str) => str.trim()).filter((str) => str !== '');
   }
   const workspaceConfig = workspace.getConfiguration();
-  config.throttleTime = +(workspaceConfig.get('smart-ime.throttleTime') as number);
-  config.enableChineseAndSpaceSwitch = !!workspaceConfig.get('smart-ime.enableChineseAndSpaceSwitch');
-  config.enableEnglishAndDoubleSpaceSwitch = !!workspaceConfig.get('smart-ime.enableEnglishAndDoubleSpaceSwitch');
-  config.leaveScopesSwitch = parse(workspaceConfig.get('smart-ime.leaveScopesSwitch') as string);
-  config.enterScopesSwitch = parse(workspaceConfig.get('smart-ime.enterScopesSwitch') as string);
+  config.enableChineseAndSpaceSwitchToEnglish = !!workspaceConfig.get('smart-ime.enableChineseAndSpaceSwitchToEnglish');
+  config.enableEnglishAndDoubleSpaceSwitchToChinese = !!workspaceConfig.get('smart-ime.enableEnglishAndDoubleSpaceSwitchToChinese');
+  config.enterScopesSwitchToChinese = parse(workspaceConfig.get('smart-ime.enterScopesSwitchToChinese') as string);
+  config.enterScopesSwitchToEnglish = parse(workspaceConfig.get('smart-ime.enterScopesSwitchToEnglish') as string);
+  config.leaveScopesSwitchToChinese = parse(workspaceConfig.get('smart-ime.leaveScopesSwitchToChinese') as string);
+  config.leaveScopesSwitchToEnglish = parse(workspaceConfig.get('smart-ime.leaveScopesSwitchToEnglish') as string);
 }
 
-// 执行命令
-let lastExecTime = 0;
-export async function execSwitchCommand() {
-  // 加上节流处理
-  const now = Date.now();
-  if (now - lastExecTime < config.throttleTime) {
-    return;
-  }
-  console.log('execSwitchCommand');
-  lastExecTime = now;
-  const extName = 'beishanyufu.ime-and-cursor';
-  const command = 'ime-and-cursor.switch';
-  try {
-    await commands.executeCommand(command);
-  } catch (err) {
-    // 如果失败了, 则走更复杂的错误处理流程
-    const imeAndCursorExt = extensions.getExtension(extName);
-    if (!imeAndCursorExt) {
-      console.log('请首先完成 IME and Cursor 插件的安装与相应配置');
-      return;
-    }
-    // 没有激活则激活插件
-    if (!imeAndCursorExt.isActive) {
-      await imeAndCursorExt.activate();
-    }
-    commands.executeCommand(command);
+// switch to chinese im
+export async function switchToChineseIM() {
+  if (await imeApi.obtainIM() !== imeApi.getChineseIM()) {
+    await imeApi.switchToChineseIM();
   }
 }
+
+// switch to english im
+export async function switchToEnglishIM() {
+  if (await imeApi.obtainIM() !== imeApi.getEnglishIM()) {
+    await imeApi.switchToEnglishIM();
+  }
+}
+
 
 // 中文+空格切换输入法
 export async function chineseAndSpaceSwitch(document: TextDocument, cursorPosition: Position) {
@@ -80,7 +77,7 @@ export async function chineseAndSpaceSwitch(document: TextDocument, cursorPositi
   const range = new Range(prePosition, cursorPosition);
   const preChars = document.getText(range);
   if (chineseAndSpaceSwitchPattern.test(preChars)) {
-    await execSwitchCommand();
+    await switchToEnglishIM();
   }
 }
 
@@ -89,8 +86,8 @@ export async function englishAndDoubleSpaceSwitch(document: TextDocument, cursor
   if (cursorPosition.character < 4) {
     return;
   }
-  const line = document.lineAt(cursorPosition.line);
-  const lineText = line.text;
+  // 获取当前行光标之前的内容
+  const lineText = document.getText(new Range(cursorPosition.line, 0, cursorPosition.line, cursorPosition.character));
   // 如果当前行没有中文, 则不处理
   if (!/[\u4e00-\u9fa5]/.test(lineText)) {
     return;
@@ -99,39 +96,45 @@ export async function englishAndDoubleSpaceSwitch(document: TextDocument, cursor
   const prePosition = cursorPosition.translate(0, -3);
   const range = new Range(prePosition, cursorPosition);
   const preChars = document.getText(range);
-  if (englishAndDoubleSpaceSwitchPattern.test(preChars)) {
-    // 删掉最后一个字符
-    const deleteRange = new Range(cursorPosition.translate(0, -1), cursorPosition);
-    await window.activeTextEditor?.edit((editBuilder) => {
-      editBuilder.delete(deleteRange);
-      execSwitchCommand();
-    });
+  if (englishAndDoubleSpaceSwitchPattern.test(preChars)) { 
+    // 如果当前是英文删掉最后一个字符然后切换到中文输入法
+    if (await imeApi.obtainIM() === imeApi.getEnglishIM()) {
+      const deleteRange = new Range(cursorPosition.translate(0, -1), cursorPosition);
+      await window.activeTextEditor?.edit((editBuilder) => {
+        editBuilder.delete(deleteRange);
+        imeApi.switchToChineseIM();
+      });
+    }
   }
 }
 
 // 处理 scopes 变化事件
 export async function handleScopesChange(curScopes: string[]) {
+  const isCurrentChinese = await imeApi.obtainIM() === imeApi.getChineseIM();
+  const switchFn = isCurrentChinese ? imeApi.switchToEnglishIM : imeApi.switchToChineseIM;
+  const leaveScopesSwitch = isCurrentChinese ? config.leaveScopesSwitchToEnglish : config.leaveScopesSwitchToChinese;
   // 根据 leaveScopes 判断是否需要切换输入法
-  if (config.leaveScopesSwitch.length !== 0) {
+  if (leaveScopesSwitch.length !== 0) {
     // 找到离开的 scopes, 即 curScopes 中没有的 lastScopes
     const leaveScopes = lastScopes.filter((scope) => !curScopes.includes(scope));
-    for (const prefix of config.leaveScopesSwitch) {
+    for (const prefix of leaveScopesSwitch) {
       // 前缀匹配
       if (leaveScopes.some((scope) => scope.startsWith(prefix))) {
-        execSwitchCommand();
+        await switchFn();
         lastScopes = curScopes;
         return;
       }
     }
   }
+  const enterScopesSwitch = isCurrentChinese ? config.enterScopesSwitchToEnglish : config.enterScopesSwitchToChinese;
   // 根据 enterScopes 判断是否需要切换输入法
-  if (config.enterScopesSwitch.length !== 0) {
+  if (enterScopesSwitch.length !== 0) {
     // 找到进入的 scopes, 即 lastScopes 中没有的 curScopes
     const enterScopes = curScopes.filter((scope) => !lastScopes.includes(scope));
-    for (const prefix of config.enterScopesSwitch) {
+    for (const prefix of enterScopesSwitch) {
       // 前缀匹配
       if (enterScopes.some((scope) => scope.startsWith(prefix))) {
-        execSwitchCommand();
+        await switchFn();
         lastScopes = curScopes;
         return;
       }
@@ -154,17 +157,18 @@ export function activate(context: ExtensionContext) {
     if (!e.selections[0].isEmpty) {
       return;
     }
-    // 如果前两个字符是中文加空格, 则切换输入法
     const editor = window.activeTextEditor;
     if (!editor) {
       return;
     }
     const document = editor.document;
     const position = e.selections[0].active;
-    if (config.enableChineseAndSpaceSwitch) {
+    // 如果前两个字符是中文加空格, 则切换输入法
+    if (config.enableChineseAndSpaceSwitchToEnglish) {
       chineseAndSpaceSwitch(document, position);
     }
-    if (config.enableEnglishAndDoubleSpaceSwitch) {
+    // 英文加双空格, 则切换输入法
+    if (config.enableEnglishAndDoubleSpaceSwitchToChinese) {
       englishAndDoubleSpaceSwitch(document, position);
     }
     // 获取当前位置的 textmate scopes

@@ -3,7 +3,7 @@
   "displayName": "Smart IME",
   "publisher": "OrangeX4",
   "description": "Smart IME",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.83.0"
   },
@@ -19,30 +19,35 @@
       {
         "title": "Smart IME",
         "properties": {
-          "smart-ime.throttleTime": {
-            "type": "number",
-            "default": 2000,
-            "description": "节流时间，一段时间内只会触发一次，单位为毫秒"
+          "smart-ime.enableChineseAndSpaceSwitchToEnglish": {
+            "type": "boolean",
+            "default": true,
+            "description": "检测到中文+空格时切换输入法到英文"
           },
-          "smart-ime.enableChineseAndSpaceSwitch": {
+          "smart-ime.enableEnglishAndDoubleSpaceSwitchToChinese": {
             "type": "boolean",
             "default": false,
-            "description": "检测到中文+空格时切换输入法"
+            "description": "检测到当前行前有中文，且光标前是非中文+双空格时切换输入法到中文并删掉一个空格"
           },
-          "smart-ime.enableEnglishAndDoubleSpaceSwitch": {
-            "type": "boolean",
-            "default": false,
-            "description": "检测到当前行有中文且前面是非中文+双空格时切换输入法并删掉一个空格"
-          },
-          "smart-ime.enterScopesSwitch": {
+          "smart-ime.enterScopesSwitchToChinese": {
             "type": "string",
             "default": "comment",
-            "description": "进入某些 scopes 时切换输入法，用逗号分割，前缀匹配"
+            "description": "进入某些 scopes 时切换输入法到中文，用逗号分割，前缀匹配"
           },
-          "smart-ime.leaveScopesSwitch": {
+          "smart-ime.enterScopesSwitchToEnglish": {
+            "type": "string",
+            "default": "",
+            "description": "进入某些 scopes 时切换输入法到英文，用逗号分割，前缀匹配"
+          },
+          "smart-ime.leaveScopesSwitchToChinese": {
+            "type": "string",
+            "default": "",
+            "description": "离开某些 scopes 时切换输入法到中文，用逗号分割，前缀匹配"
+          },
+          "smart-ime.leaveScopesSwitchToEnglish": {
             "type": "string",
             "default": "comment",
-            "description": "离开某些 scopes 时切换输入法，用逗号分割，前缀匹配"
+            "description": "离开某些 scopes 时切换输入法到英文，用逗号分割，前缀匹配"
           }
         }
       }
