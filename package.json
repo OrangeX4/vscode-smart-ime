@@ -36,12 +36,12 @@
           },
           "smart-ime.enterScopesSwitchToEnglish": {
             "type": "string",
-            "default": "",
+            "default": "markup.math",
             "description": "进入某些 scopes 时切换输入法到英文，用逗号分割，前缀匹配"
           },
           "smart-ime.leaveScopesSwitchToChinese": {
             "type": "string",
-            "default": "",
+            "default": "markup.math",
             "description": "离开某些 scopes 时切换输入法到中文，用逗号分割，前缀匹配"
           },
           "smart-ime.leaveScopesSwitchToEnglish": {

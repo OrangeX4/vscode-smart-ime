@@ -8,12 +8,11 @@ import {
   window,
   extensions,
   workspace,
-  commands,
 } from 'vscode';
 import { HScopesAPI } from '../types/hscopes';
 
-const chineseAndSpaceSwitchPattern = /^[\u4e00-\u9fa5] $/;
-const englishAndDoubleSpaceSwitchPattern = /^[^\u4e00-\u9fa5]  $/;
+const chineseAndSpaceSwitchPattern = /^[^\x00-\xff] $/;
+const englishAndDoubleSpaceSwitchPattern = /^[\x00-\xff]  $/;
 
 // config
 const config = {
