@@ -2,8 +2,9 @@
   "name": "vscode-smart-ime",
   "displayName": "Smart IME",
   "publisher": "OrangeX4",
-  "description": "Smart IME",
-  "version": "0.1.0",
+  "description": "智能切换中文与英文输入法",
+  "icon": "icon.png",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.83.0"
   },
