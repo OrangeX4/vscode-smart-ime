@@ -4,7 +4,7 @@
   "publisher": "OrangeX4",
   "description": "智能切换中文与英文输入法",
   "icon": "icon.png",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "engines": {
     "vscode": "^1.83.0"
   },
@@ -20,6 +20,16 @@
       {
         "title": "Smart IME",
         "properties": {
+          "smart-ime.disabledOnEnglishTextOverN": {
+            "type": "number",
+            "default": 100,
+            "description": "如果当前文档拥有超过 n 个英文字符且没有中文字符，则禁用插件（你也可以直接在文档中加入 DISABLE_SMART_IME 字符串）"
+          },
+          "smart-ime.enableChineseSwitchToChinese": {
+            "type": "boolean",
+            "default": true,
+            "description": "检测到中文时切换输入法到中文"
+          },
           "smart-ime.enableChineseAndSpaceSwitchToEnglish": {
             "type": "boolean",
             "default": true,

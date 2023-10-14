@@ -4,7 +4,7 @@
 
 灵感来自 idea 的 Smart Input，用于智能地进行中英输入法的切换。
 
-依赖于 IME and Cursor 插件，所以请先进行该插件的配置，例如可以配置中文输入法时显示为红色光标。
+**依赖于 IME and Cursor 插件，所以请先进行该插件的配置，例如可以配置中文输入法时显示为红色光标。**
 
 ## 依赖
 
@@ -14,9 +14,15 @@
 
 ![](./smart-ime.gif)
 
-- 在中文后输入一个空格自动切换到英文输入法（默认开启），在英文后输入两个空格自动切换到中文输入法（默认未开启）；
+- 检测到前一个字符是中文时自动切换到中文输入法（默认开启）；
+- 在中文后输入一个空格自动切换到英文输入法（默认开启）；
+- 在英文后输入两个空格自动切换到中文输入法（默认未开启）；
 - 进入到注释场景时，自动切换为中文输入法，离开时自动切换为英文输入法（参考插件配置里的 `comment` 相关内容）；
 - 进入到数学公式时，自动切换为英文输入法，离开时自动切换为中文输入法（参考插件配置里的 `markup.math` 相关内容）；
+- 如果当前文档拥有超过 n 个英文字符且没有中文字符，则禁用插件；
+  - 只有在切换窗口时重新检测
+- 当然，你也可以在文档中加入一个字符串 `DISABLE_SMART_IME`（例如在注释块里写这个字符串），只要识别到当前文档有这个字符串，也会在当前文件禁用插件；
+  - 只有在切换窗口时重新检测
 
 ## 目前的问题
 
@@ -26,6 +32,8 @@
 
 ## 插件设置
 
+- `smart-ime.disabledOnEnglishTextOverN`: 如果当前文档拥有超过 n 个英文字符且没有中文字符，则禁用插件，默认为 100，值为 -1 时禁用该设置
+- `smart-ime.enableChineseSwitchToChinese`: 检测到中文时切换输入法到中文，默认开启
 - `smart-ime.enableChineseAndSpaceSwitchToEnglish`: 检测到中文+空格时切换输入法到英文，默认开启
 - `smart-ime.enableEnglishAndDoubleSpaceSwitchToChinese`: 检测到当前行前有中文，且光标前面是非中文+双空格时切换输入法到中文并删掉一个空格，默认关闭
 - `smart-ime.enterScopesSwitchToChinese`: 进入某些 scopes 时切换输入法到中文，用逗号分割，前缀匹配 (请使用 `Developer: Inspect Editor Tokens and Scopes` 查看)
@@ -33,6 +41,6 @@
 - `smart-ime.enterScopesSwitchToEnglish`: 进入某些 scopes 时切换输入法到英文，用逗号分割，前缀匹配 (请使用 `Developer: Inspect Editor Tokens and Scopes` 查看)
   - 例如这里默认配置了 `markup.math` 就可以实现进入数学公式时切换到英文输入法的效果
 - `smart-ime.leaveScopesSwitchToChinese`: 离开某些 scopes 时切换输入法到中文，用逗号分割，前缀匹配 (请使用 `Developer: Inspect Editor Tokens and Scopes` 查看)
-  - 例如这里默认配置了 `markup.math` 就可以实现离开数学公式时切换到英文输入法的效果
+  - 例如这里默认配置了 `markup.math` 就可以实现离开数学公式时切换到中文输入法的效果
 - `smart-ime.leaveScopesSwitchToEnglish`: 离开某些 scopes 时切换输入法到中文，用逗号分割，前缀匹配 (请使用 `Developer: Inspect Editor Tokens and Scopes` 查看)
   - 例如这里默认配置了 `comment` 就可以实现离开注释块时切换到英文输入法的效果
