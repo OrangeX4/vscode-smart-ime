@@ -199,6 +199,7 @@ export function activate(context: ExtensionContext) {
         const lineText = document.lineAt(i).text;
         if (!hasChinese && chineseCharacterPattern.test(lineText)) {
           hasChinese = true;
+          break;
         }
         count += lineText.length;
       }
