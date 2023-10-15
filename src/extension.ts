@@ -22,6 +22,7 @@ let disabledFlag = false;
 const config = {
   disabledOnEnglishTextOverN: 100,
   enableChineseSwitchToChinese: true,
+  enableChineseSwitchToChineseInterval: 2000,
   enableChineseAndSpaceSwitchToEnglish: true,
   enableEnglishAndDoubleSpaceSwitchToChinese: false,
   enterScopesSwitchToChinese: [] as string[],
@@ -52,6 +53,7 @@ export function updateConfig() {
   const workspaceConfig = workspace.getConfiguration();
   config.disabledOnEnglishTextOverN = +(workspaceConfig.get('smart-ime.disabledOnEnglishTextOverN') as number);
   config.enableChineseSwitchToChinese = !!workspaceConfig.get('smart-ime.enableChineseSwitchToChinese');
+  config.enableChineseSwitchToChineseInterval = +(workspaceConfig.get('smart-ime.enableChineseSwitchToChineseInterval') as number);
   config.enableChineseAndSpaceSwitchToEnglish = !!workspaceConfig.get('smart-ime.enableChineseAndSpaceSwitchToEnglish');
   config.enableEnglishAndDoubleSpaceSwitchToChinese = !!workspaceConfig.get('smart-ime.enableEnglishAndDoubleSpaceSwitchToChinese');
   config.enterScopesSwitchToChinese = parse(workspaceConfig.get('smart-ime.enterScopesSwitchToChinese') as string);
@@ -60,6 +62,7 @@ export function updateConfig() {
   config.leaveScopesSwitchToEnglish = parse(workspaceConfig.get('smart-ime.leaveScopesSwitchToEnglish') as string);
 }
 
+let lastChineseSwitchToChineseTime = 0;
 // switch to chinese im
 export async function switchToChineseIM() {
   if (await imeApi.obtainIM() !== imeApi.getChineseIM()) {
@@ -70,6 +73,8 @@ export async function switchToChineseIM() {
 // switch to english im
 export async function switchToEnglishIM() {
   if (await imeApi.obtainIM() !== imeApi.getEnglishIM()) {
+    // 切换到英文输入法时顺便重置一下 lastChineseSwitchToChineseTime
+    lastChineseSwitchToChineseTime = 0;
     await imeApi.switchToEnglishIM();
   }
 }
@@ -80,10 +85,17 @@ export async function chineseSwitchToChinese(document: TextDocument, cursorPosit
   if (cursorPosition.character < 1) {
     return;
   }
+  
   const prePosition = cursorPosition.translate(0, -1);
   const range = new Range(prePosition, cursorPosition);
   const preChars = document.getText(range);
   if (chineseCharacterPattern.test(preChars)) {
+    // 设置触发间隔
+    if (Date.now() - lastChineseSwitchToChineseTime < config.enableChineseSwitchToChineseInterval) {
+      return;
+    }
+    lastChineseSwitchToChineseTime = Date.now();
+
     await switchToChineseIM();
   }
 }
