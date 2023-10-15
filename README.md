@@ -24,6 +24,22 @@
 - 当然，你也可以在文档中加入一个字符串 `DISABLE_SMART_IME`（例如在注释块里写这个字符串），只要识别到当前文档有这个字符串，也会在当前文件禁用插件；
   - 只有在切换窗口时重新检测
 
+
+## 在 remote / SSH / WSL / docker 模式下使用
+
+如果无法在 remote 状态下生效，可以试着先在 remote 删除 Smart IME 以及其依赖的两个插件，然后在设置中加入如下设置：
+
+```json
+"remote.extensionKind": {
+  "draivin.hscopes": ["ui"],
+  "beishanyufu.ime-and-cursor": ["ui"],
+  "OrangeX4.vscode-smart-ime": ["ui"]
+}
+```
+
+再重新安装插件即可。
+
+
 ## 目前的问题
 
 - VS Code 并没有给出一个很好的 api 来判断终端是否获得了焦点，因此切换到终端时切换到英文输入法的功能暂时无法实现；

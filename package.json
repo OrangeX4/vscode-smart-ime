@@ -4,7 +4,10 @@
   "publisher": "OrangeX4",
   "description": "智能切换中文与英文输入法",
   "icon": "icon.png",
-  "version": "0.2.1",
+  "version": "0.2.2",
+  "extensionKind": [
+    "ui"
+  ],
   "engines": {
     "vscode": "^1.83.0"
   },
