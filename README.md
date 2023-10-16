@@ -4,11 +4,11 @@
 
 灵感来自 idea 的 Smart Input，用于智能地进行中英输入法的切换。
 
-**依赖于 IME and Cursor 插件，所以请先进行该插件的配置，例如可以配置中文输入法时显示为红色光标。**
+**依赖于 [IME and Cursor](https://marketplace.visualstudio.com/items?itemName=beishanyufu.ime-and-cursor) 插件，所以请先进行该插件的配置，例如可以配置中文输入法时显示为红色光标。**
 
 ## 依赖
 
-需要安装 IME and Cursor 与 HyperScopes 插件。
+需要安装 [IME and Cursor](https://marketplace.visualstudio.com/items?itemName=beishanyufu.ime-and-cursor) 与 HyperScopes 插件。
 
 ## 特性
 
@@ -23,6 +23,11 @@
   - 只有在切换窗口时重新检测
 - 当然，你也可以在文档中加入一个字符串 `DISABLE_SMART_IME`（例如在注释块里写这个字符串），只要识别到当前文档有这个字符串，也会在当前文件禁用插件；
   - 只有在切换窗口时重新检测
+
+
+## 获取输入法的 key 失败，请检查是否正确设置了 "ObtainIMCmd"
+
+请搜索插件 [IME and cursor](https://marketplace.visualstudio.com/items?itemName=beishanyufu.ime-and-cursor)，并按插件说明进行相应的安装和配置。
 
 
 ## 在 remote / SSH / WSL / docker 模式下使用
@@ -53,11 +58,12 @@
 - `smart-ime.enableChineseSwitchToChineseInterval`: 检测到中文时切换输入法到中文的触发间隔，默认 2000 毫秒（即两秒）
 - `smart-ime.enableChineseAndSpaceSwitchToEnglish`: 检测到中文+空格时切换输入法到英文，默认开启
 - `smart-ime.enableEnglishAndDoubleSpaceSwitchToChinese`: 检测到当前行前有中文，且光标前面是非中文+双空格时切换输入法到中文并删掉一个空格，默认关闭
-- `smart-ime.enterScopesSwitchToChinese`: 进入某些 scopes 时切换输入法到中文，用逗号分割，前缀匹配 (请使用 `Developer: Inspect Editor Tokens and Scopes` 查看)
+- `smart-ime.enterScopesSwitchToChinese`: 进入某些 scopes 时切换输入法到中文，用逗号分割，前缀匹配，请使用 `Developer: Inspect Editor Tokens and Scopes` 查看当前位置的 scopes
   - 例如这里默认配置了 `comment` 就可以实现进入注释块时切换到中文输入法的效果
-- `smart-ime.enterScopesSwitchToEnglish`: 进入某些 scopes 时切换输入法到英文，用逗号分割，前缀匹配 (请使用 `Developer: Inspect Editor Tokens and Scopes` 查看)
+  - 如果配置了 `comment,string`，就可以匹配 Python 的 `comment.line.number-sign.python`（注释）和 `string.quoted.single.python`（字符串），请使用 `Developer: Inspect Editor Tokens and Scopes` 命令查看 scopes
+- `smart-ime.enterScopesSwitchToEnglish`: 进入某些 scopes 时切换输入法到英文，用逗号分割，前缀匹配
   - 例如这里默认配置了 `markup.math` 就可以实现进入数学公式时切换到英文输入法的效果
-- `smart-ime.leaveScopesSwitchToChinese`: 离开某些 scopes 时切换输入法到中文，用逗号分割，前缀匹配 (请使用 `Developer: Inspect Editor Tokens and Scopes` 查看)
+- `smart-ime.leaveScopesSwitchToChinese`: 离开某些 scopes 时切换输入法到中文，用逗号分割，前缀匹配
   - 例如这里默认配置了 `markup.math` 就可以实现离开数学公式时切换到中文输入法的效果
-- `smart-ime.leaveScopesSwitchToEnglish`: 离开某些 scopes 时切换输入法到中文，用逗号分割，前缀匹配 (请使用 `Developer: Inspect Editor Tokens and Scopes` 查看)
+- `smart-ime.leaveScopesSwitchToEnglish`: 离开某些 scopes 时切换输入法到中文，用逗号分割，前缀匹配
   - 例如这里默认配置了 `comment` 就可以实现离开注释块时切换到英文输入法的效果
