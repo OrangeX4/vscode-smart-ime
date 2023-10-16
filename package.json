@@ -4,9 +4,22 @@
   "publisher": "OrangeX4",
   "description": "智能切换中文与英文输入法",
   "icon": "icon.png",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "extensionKind": [
     "ui"
+  ],
+  "keywords": [
+    "Smart Input",
+    "Input",
+    "IM",
+    "IME",
+    "输入法",
+    "智能",
+    "keyboard",
+    "Chinese",
+    "input method",
+    "中文",
+    "中文编程"
   ],
   "engines": {
     "vscode": "^1.83.0"

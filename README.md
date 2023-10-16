@@ -27,7 +27,7 @@
 
 ## 在 remote / SSH / WSL / docker 模式下使用
 
-如果无法在 remote 状态下生效，可以试着先在 remote 删除 Smart IME 以及其依赖的两个插件，然后在设置中加入如下设置：
+如果无法在 remote 状态下生效，可以试着先在 remote 删除 Smart IME 以及其依赖的两个插件，然后在 remote 的设置中加入如下设置：
 
 ```json
 "remote.extensionKind": {
