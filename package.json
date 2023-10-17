@@ -4,7 +4,7 @@
   "publisher": "OrangeX4",
   "description": "智能切换中文与英文输入法",
   "icon": "icon.png",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "extensionKind": [
     "ui"
   ],

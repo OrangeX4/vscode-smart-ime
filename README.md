@@ -30,6 +30,11 @@
 请搜索插件 [IME and cursor](https://marketplace.visualstudio.com/items?itemName=beishanyufu.ime-and-cursor)，并按插件说明进行相应的安装和配置。
 
 
+## 切换输入法无法切换光标样式
+
+请使用 `shift + space` 切换输入法，而不是使用系统自带的快捷键。搜索插件 [IME and cursor](https://marketplace.visualstudio.com/items?itemName=beishanyufu.ime-and-cursor) 查看更详细的说明。
+
+
 ## 在 remote / SSH / WSL / docker 模式下使用
 
 如果无法在 remote 状态下生效，可以试着先在 remote 删除 Smart IME 以及其依赖的两个插件，然后在 remote 的设置中加入如下设置：
