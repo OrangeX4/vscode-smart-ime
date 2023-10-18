@@ -20,6 +20,7 @@ let disabledFlag = false;
 
 // config
 const config = {
+  warnDisabled: true,
   disabledOnEnglishTextOverN: 100,
   enableChineseSwitchToChinese: true,
   enableChineseSwitchToChineseInterval: 2000,
@@ -43,7 +44,6 @@ const imeApi = extensions.getExtension('beishanyufu.ime-and-cursor')?.exports as
 
 // 用于 scope 判断
 const hscopes = extensions.getExtension('draivin.hscopes');
-let lastScopes = [] as string[];
 
 // 读取配置并更新
 export function updateConfig() {
@@ -51,6 +51,7 @@ export function updateConfig() {
     return arrStr.split(',').map((str) => str.trim()).filter((str) => str !== '');
   }
   const workspaceConfig = workspace.getConfiguration();
+  config.warnDisabled = !!(workspaceConfig.get('smart-ime.warnDisabled') as boolean);
   config.disabledOnEnglishTextOverN = +(workspaceConfig.get('smart-ime.disabledOnEnglishTextOverN') as number);
   config.enableChineseSwitchToChinese = !!workspaceConfig.get('smart-ime.enableChineseSwitchToChinese');
   config.enableChineseSwitchToChineseInterval = +(workspaceConfig.get('smart-ime.enableChineseSwitchToChineseInterval') as number);
@@ -85,7 +86,7 @@ export async function chineseSwitchToChinese(document: TextDocument, cursorPosit
   if (cursorPosition.character < 1) {
     return;
   }
-  
+
   const prePosition = cursorPosition.translate(0, -1);
   const range = new Range(prePosition, cursorPosition);
   const preChars = document.getText(range);
@@ -128,7 +129,7 @@ export async function englishAndDoubleSpaceSwitch(document: TextDocument, cursor
   const prePosition = cursorPosition.translate(0, -3);
   const range = new Range(prePosition, cursorPosition);
   const preChars = document.getText(range);
-  if (englishAndDoubleSpaceSwitchToChinesePattern.test(preChars)) { 
+  if (englishAndDoubleSpaceSwitchToChinesePattern.test(preChars)) {
     // 如果当前是英文删掉最后一个字符然后切换到中文输入法
     if (await imeApi.obtainIM() === imeApi.getEnglishIM()) {
       const deleteRange = new Range(cursorPosition.translate(0, -1), cursorPosition);
@@ -141,39 +142,55 @@ export async function englishAndDoubleSpaceSwitch(document: TextDocument, cursor
 }
 
 // 处理 scopes 变化事件
+let leaveScopesSwitchToChineseMatchs = {} as Record<string, boolean>;
+let leaveScopesSwitchToEnglishMatchs = {} as Record<string, boolean>;
+let enterScopesSwitchToChineseMatchs = {} as Record<string, boolean>;
+let enterScopesSwitchToEnglishMatchs = {} as Record<string, boolean>;
 export async function handleScopesChange(curScopes: string[]) {
-  const isCurrentChinese = await imeApi.obtainIM() === imeApi.getChineseIM();
-  const switchFn = isCurrentChinese ? imeApi.switchToEnglishIM : imeApi.switchToChineseIM;
-  const leaveScopesSwitch = isCurrentChinese ? config.leaveScopesSwitchToEnglish : config.leaveScopesSwitchToChinese;
-  // 根据 leaveScopes 判断是否需要切换输入法
-  if (leaveScopesSwitch.length !== 0) {
-    // 找到离开的 scopes, 即 curScopes 中没有的 lastScopes
-    const leaveScopes = lastScopes.filter((scope) => !curScopes.includes(scope));
-    for (const prefix of leaveScopesSwitch) {
+  // 是否切换到中文的标记
+  let isSwitch = false;
+  let isSwitchToChinese = false;
+  function getMatchs(scopesSwitch: string[]): Record<string, boolean> {
+    const matchs = {} as Record<string, boolean>;
+    for (const scopePrefix of scopesSwitch) {
       // 前缀匹配
-      if (leaveScopes.some((scope) => scope.startsWith(prefix))) {
-        await switchFn();
-        lastScopes = curScopes;
-        return;
-      }
+      matchs[scopePrefix] = curScopes.some((scope) => scope.startsWith(scopePrefix));
+    }
+    return matchs;
+  }
+  // 判断是否在离开的 scope 中
+  let newLeaveScopesSwitchToChineseMatchs = getMatchs(config.leaveScopesSwitchToChinese);
+  if (config.leaveScopesSwitchToChinese.some(scopePrefix => leaveScopesSwitchToChineseMatchs[scopePrefix] && !newLeaveScopesSwitchToChineseMatchs[scopePrefix])) {
+    isSwitch = true;
+    isSwitchToChinese = true;
+  }
+  leaveScopesSwitchToChineseMatchs = newLeaveScopesSwitchToChineseMatchs;
+  let newLeaveScopesSwitchToEnglishMatchs = getMatchs(config.leaveScopesSwitchToEnglish);
+  if (config.leaveScopesSwitchToEnglish.some(scopePrefix => leaveScopesSwitchToEnglishMatchs[scopePrefix] && !newLeaveScopesSwitchToEnglishMatchs[scopePrefix])) {
+    isSwitch = true;
+    isSwitchToChinese = false;
+  }
+  leaveScopesSwitchToEnglishMatchs = newLeaveScopesSwitchToEnglishMatchs;
+  // 判断是否在进入的 scope 中
+  let newEnterScopesSwitchToChineseMatchs = getMatchs(config.enterScopesSwitchToChinese);
+  if (config.enterScopesSwitchToChinese.some(scopePrefix => !enterScopesSwitchToChineseMatchs[scopePrefix] && newEnterScopesSwitchToChineseMatchs[scopePrefix])) {
+    isSwitch = true;
+    isSwitchToChinese = true;
+  }
+  enterScopesSwitchToChineseMatchs = newEnterScopesSwitchToChineseMatchs;
+  let newEnterScopesSwitchToEnglishMatchs = getMatchs(config.enterScopesSwitchToEnglish);
+  if (config.enterScopesSwitchToEnglish.some(scopePrefix => !enterScopesSwitchToEnglishMatchs[scopePrefix] && newEnterScopesSwitchToEnglishMatchs[scopePrefix])) {
+    isSwitch = true;
+    isSwitchToChinese = false;
+  }
+  enterScopesSwitchToEnglishMatchs = newEnterScopesSwitchToEnglishMatchs;
+  if (isSwitch) {
+    if (isSwitchToChinese) {
+      await switchToChineseIM();
+    } else {
+      await switchToEnglishIM();
     }
   }
-  const enterScopesSwitch = isCurrentChinese ? config.enterScopesSwitchToEnglish : config.enterScopesSwitchToChinese;
-  // 根据 enterScopes 判断是否需要切换输入法
-  if (enterScopesSwitch.length !== 0) {
-    // 找到进入的 scopes, 即 lastScopes 中没有的 curScopes
-    const enterScopes = curScopes.filter((scope) => !lastScopes.includes(scope));
-    for (const prefix of enterScopesSwitch) {
-      // 前缀匹配
-      if (enterScopes.some((scope) => scope.startsWith(prefix))) {
-        await switchFn();
-        lastScopes = curScopes;
-        return;
-      }
-    }
-  }
-  // 更新 lastScopes
-  lastScopes = curScopes;
 }
 
 export function activate(context: ExtensionContext) {
@@ -199,6 +216,10 @@ export function activate(context: ExtensionContext) {
       const lineText = document.lineAt(i).text;
       if (lineText.includes('DISABLE_SMART_IME')) {
         disabledFlag = true;
+        // 提示禁用
+        if (config.warnDisabled) {
+          window.showInformationMessage('当前文档存在 DISABLE_SMART_IME 字符串，Smart IME 已禁用（可在设置中关闭提示）');
+        }
         return;
       }
     }
@@ -218,6 +239,10 @@ export function activate(context: ExtensionContext) {
       // 如果没有中文且字符数超过阈值, 则禁用
       if (!hasChinese && count > config.disabledOnEnglishTextOverN) {
         disabledFlag = true;
+        // 提示禁用
+        if (config.warnDisabled) {
+          window.showInformationMessage(`当前纯英文文档字符数超过 ${config.disabledOnEnglishTextOverN}，Smart IME 已禁用，加入中文字符后重新打开文档即可启用（可在设置中关闭提示）`);
+        }
         return;
       }
     }
