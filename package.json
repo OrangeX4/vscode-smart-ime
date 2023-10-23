@@ -4,7 +4,7 @@
   "publisher": "OrangeX4",
   "description": "智能切换中文与英文输入法",
   "icon": "icon.png",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "extensionKind": [
     "ui"
   ],
@@ -85,6 +85,11 @@
             "type": "string",
             "default": "comment,string",
             "description": "离开某些 scopes 时切换输入法到英文，用逗号分割，前缀匹配，例如 `comment,string` 就可以匹配 Python 的 `comment.line.number-sign.python`（注释）和 `string.quoted.single.python`（字符串），请使用 `Developer: Inspect Editor Tokens and Scopes` 命令查看 scopes"
+          },
+          "smart-ime.disabledOnVim": {
+            "type": "boolean",
+            "default": true,
+            "description": "在 Vim Normal 模式下禁用"
           }
         }
       }

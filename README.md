@@ -23,7 +23,8 @@
 - 如果当前文档拥有超过 n 个英文字符且没有中文字符，则禁用插件；
   - 只有在切换窗口时重新检测
 - 当然，你也可以在文档中加入一个字符串 `DISABLE_SMART_IME`（例如在注释块里写这个字符串），只要识别到当前文档有这个字符串，也会在当前文件禁用插件；
-  - 只有在切换窗口时重新检测
+  - 只有在切换窗口时重新检测；
+- 在 Vim Normal 模式下禁用自动切换，不过目前识别 Vim Normal 模式仅是根据光标状态识别，可能存在 bug。
 
 
 ## 获取输入法的 key 失败，请检查是否正确设置了 "ObtainIMCmd"
@@ -74,4 +75,5 @@
   - 例如这里默认配置了 `markup.math,meta.math` 就可以实现离开数学公式（markdown 和 latex）时切换到中文输入法的效果
 - `smart-ime.leaveScopesSwitchToEnglish`: 离开某些 scopes 时切换输入法到中文，用逗号分割，前缀匹配
   - 例如这里默认配置了 `comment,string` 就可以实现离开注释块和字符串时切换到英文输入法的效果
+- `smart-ime.disabledOnVim`: 在 Vim Normal 模式下禁用自动切换，不过目前识别 Vim Normal 模式仅是根据光标状态识别，可能存在 bug
 - 优先级是 **优先英文切换** 和 **优先进入切换**

@@ -8,6 +8,7 @@ import {
   window,
   extensions,
   workspace,
+  TextEditorCursorStyle,
 } from 'vscode';
 import { HScopesAPI } from '../types/hscopes';
 
@@ -17,6 +18,9 @@ const englishAndDoubleSpaceSwitchToChinesePattern = /^[\x00-\xff]  $/;
 
 // 全局的禁用标记
 let disabledFlag = false;
+// 关于 vim 的禁用逻辑
+let lastDisabledFlag = false;
+let lastCursorStyle: TextEditorCursorStyle | undefined;
 
 // config
 const config = {
@@ -30,6 +34,7 @@ const config = {
   enterScopesSwitchToEnglish: [] as string[],
   leaveScopesSwitchToChinese: [] as string[],
   leaveScopesSwitchToEnglish: [] as string[],
+  disabledOnVim: true,
 };
 
 // ime api
@@ -61,6 +66,7 @@ export function updateConfig() {
   config.enterScopesSwitchToEnglish = parse(workspaceConfig.get('smart-ime.enterScopesSwitchToEnglish') as string);
   config.leaveScopesSwitchToChinese = parse(workspaceConfig.get('smart-ime.leaveScopesSwitchToChinese') as string);
   config.leaveScopesSwitchToEnglish = parse(workspaceConfig.get('smart-ime.leaveScopesSwitchToEnglish') as string);
+  config.disabledOnVim = !!workspaceConfig.get('smart-ime.disabledOnVim');
 }
 
 let lastChineseSwitchToChineseTime = 0;
@@ -247,6 +253,20 @@ export function activate(context: ExtensionContext) {
       }
     }
     disabledFlag = false;
+  });
+
+  window.onDidChangeTextEditorOptions(async (e) => {
+    if (config.disabledOnVim) {
+      if (lastCursorStyle !== e.options.cursorStyle) {
+        if (e.options.cursorStyle === 2) {
+          lastDisabledFlag = disabledFlag;
+          disabledFlag = true;
+        } else {
+          disabledFlag = lastDisabledFlag;
+        }
+        lastCursorStyle = e.options.cursorStyle;
+      }
+    }
   });
 
   // 监听 vscode 光标变化事件
